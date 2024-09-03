@@ -1,0 +1,40 @@
+image: maven:3.8.3-openjdk-11
+
+stages:
+  - build
+  - test
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+
+cache:
+  paths:
+    - .m2/repository
+
+build:
+  stage: build
+  script:
+    - mvn clean compile
+
+test:
+  stage: test
+  script:
+    - mvn test
+  artifacts:
+    reports:
+      junit:
+        - target/surefire-reports/TEST-*.xml
+    paths:
+      - target/cucumber-reports
+
+pages:
+  stage: deploy
+  dependencies:
+    - test
+  script:
+    - mv target/cucumber-reports public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
